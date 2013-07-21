@@ -4,7 +4,7 @@ var admin = {};
 admin.whiteList = {};
 admin.banList = {};
 admin.opList = {};
-admin.whiteListEnabled = true;
+admin.whiteListEnabled = false;
 
 var io = {};
 io.GetFileText = function (path)
@@ -22,11 +22,11 @@ function LoadInfo(path)
 
     if (!System.IO.File.Exists(path)) {
         try {
-            LogInfo("[Admin] Creating " + path);
+            LogInfo("Creating " + path);
             System.IO.File.CreateText(path).Close();
         }
         catch (e) {
-            LogError("[Admin] Could not create " + path + "! (" + e + ")");
+            LogError("Could not create " + path + "! (" + e + ")");
         }
     }
     else {
@@ -45,7 +45,7 @@ function LoadInfo(path)
             }
         }
         catch (e) {
-            LogError("[Admin] Could not load " + path + "! (" + e + ")\n");
+            LogError("Could not load " + path + "! (" + e + ")\n");
         }
     }
     
@@ -90,7 +90,7 @@ function onClientVersion(version, client) {
 }
 
 function onClientJoin(client, ip) {
-    LogInfo("Client #" + client.ID + ", " + client.Entity.Name + " has joined");
+    LogInfo("Client " + client.Entity.Name + " has joined");
     return true;
 }
 
@@ -99,15 +99,31 @@ function onEntityUpdate(entity, changed, client) {
 }
 
 function onChatMessage(message, client) {
-    LogInfo("<" + client.Entity.Name + "> " + message);
+	/*if(message.charAt(0) == '.'){
+		
+		var parts = message.split(' ');
+		coob.SendServerMessage("Time set to 1 hours.");
+		LogInfo("<" + parts);
 
-    var day = 1;
-    var time = parseFloat(message);
+		if(parts[0] === ".time"){
+			var time = parseFloat(parts[1]);
+			
+			if (!isNaN(time)) {
+				coob.SetTime(1, time);
+				coob.SendServerMessage("Time set to " + time + " hours.");
+			}
+		}
+		return true;
+	}else{*/
+		LogInfo("<" + client.Entity.Name + "> " + message);
 
-    if (!isNaN(time)) {
-        coob.SetTime(day, time);
-        coob.SendServerMessage("Time set to " + time + " hours.");
-    }
+		var time = parseFloat(message);
+
+		if (!isNaN(time)) {
+			coob.SetTime(1, time);
+			coob.SendServerMessage("Time set to " + time + " hours.");
+		}
+	//} dont work =_=
 
     return true;
 }
