@@ -30,12 +30,12 @@ namespace Coob.Packets
 
             public override void Process()
             {
-                Sender.Writer.Write(SCPacketIDs.Join); // ServerData
+                Sender.Writer.Write((int)SCPacketIDs.Join); // ServerData
                 Sender.Writer.Write(0);
                 Sender.Writer.Write(Sender.ID);
                 Sender.Writer.Write(new byte[0x1168]);
 
-                Sender.Writer.Write(SCPacketIDs.SeedData);
+                Sender.Writer.Write((int)SCPacketIDs.SeedData);
                 Sender.Writer.Write(Root.Coob.Options.WorldSeed);
             }
         }

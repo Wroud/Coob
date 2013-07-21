@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Coob</RootNamespace>
     <AssemblyName>Coob</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
@@ -38,6 +38,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -47,6 +48,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Ionic.Zlib, Version=1.9.1.8, Culture=neutral, PublicKeyToken=edbe51ad942a3f5c, processorArchitecture=MSIL">
@@ -64,15 +66,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="System\BinaryWriterExtensions.cs" />
-    <Compile Include="System\Client.cs" />
-    <Compile Include="System\Coob.cs" />
+    <Compile Include="CSystem\BinaryWriterExtensions.cs" />
+    <Compile Include="CSystem\Client.cs" />
+    <Compile Include="CSystem\Coob.cs" />
     <Compile Include="Exceptions\UserLimitReachedException.cs" />
-    <Compile Include="System\FileEngine\iniFile.cs" />
-    <Compile Include="System\Hooks.cs" />
-    <Compile Include="System\IScriptHandler.cs" />
-    <Compile Include="System\Log.cs" />
-    <Compile Include="System\NetReader.cs" />
+    <Compile Include="CSystem\FileEngine\iniFile.cs" />
+    <Compile Include="CSystem\Hooks.cs" />
+    <Compile Include="CSystem\IScriptHandler.cs" />
+    <Compile Include="CSystem\Log.cs" />
+    <Compile Include="CSystem\NetReader.cs" />
     <Compile Include="Packets\Packet.cs" />
     <Compile Include="Packets\ChatMessage.cs" />
     <Compile Include="Packets\ClientVersion.cs" />
@@ -82,13 +84,13 @@
     <Compile Include="Packets\Shoot.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="System\JavascriptEngine.cs" />
-    <Compile Include="System\QVector3.cs" />
+    <Compile Include="CSystem\JavascriptEngine.cs" />
+    <Compile Include="CSystem\QVector3.cs" />
     <Compile Include="Structures\Appearance.cs" />
     <Compile Include="Structures\Entity.cs" />
     <Compile Include="Structures\Item.cs" />
-    <Compile Include="System\Vector3.cs" />
-    <Compile Include="System\ZlibHelper.cs" />
+    <Compile Include="CSystem\Vector3.cs" />
+    <Compile Include="CSystem\ZlibHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
