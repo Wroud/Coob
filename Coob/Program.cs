@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Coob.System.FileEngine;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,17 +20,32 @@ namespace Coob
             Console.TreatControlCAsInput = true;
             Log.Info("Starting Coob.");
 
-            Coob = new Coob(new CoobOptions
+            DefaultCoobOptions defopt = new DefaultCoobOptions();
+
+            iniFile config = new iniFile(AppDomain.CurrentDomain.BaseDirectory + "config.ini");
+            if (File.Exists("config.ini"))
             {
-                Port = 12345,
-                //WorldSeed = new Random().Next(0, int.MaxValue), // I set it to random because it's easier to see if EntityUpdate is fixed or not. (fakin loading times tho)
-                WorldSeed = 19025811,
-            });
+                Log.Info("Read file config.ini ...");
+                defopt.Port = Convert.ToInt32(config.IniReadValue("Settings", "Port"));
+                defopt.WorldSeed = Convert.ToInt32(config.IniReadValue("Settings", "WorldSeed"));
+            }
+            else
+            {
+                Log.Warning("File config.ini doesn't exist");
+                Log.Info("Creating file config.ini ...");
+                File.Create("config.ini").Close();
+                config.IniWriteValue("Settings", "Port", defopt.Port.ToString());
+                config.IniWriteValue("Settings", "WorldSeed", defopt.WorldSeed.ToString());
+            }
+            Log.Info("Port set to " + defopt.Port);
+            Log.Info("WorldSeed set to " + defopt.WorldSeed);
+
+            Coob = new Coob(defopt);
 
             Scripting = new JavascriptEngine();
 
             Scripting.Initialize();
-            Scripting.Load("Coob.js");
+            Scripting.Load("Coob.java");
 
             Scripting.SetParameter("coob", Root.Coob);
 
@@ -47,7 +63,7 @@ namespace Coob
 
             Coob.StartMessageHandler();
 
-            while(Coob.Running)
+            while (Coob.Running)
             {
                 var input = Console.ReadLine().ToLower();
 
