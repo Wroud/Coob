@@ -20,9 +20,12 @@ namespace Coob
     }
     public class DefaultCoobOptions : CoobOptions
     {
-        new public int Port = 12345;
-        new public int WorldSeed = 19025811;
-        new public uint MaxClients = 1024;
+        public DefaultCoobOptions()
+        {
+            Port = 12345;
+            WorldSeed = 19025811;
+            MaxClients = 1024;
+        }
     }
 
     public class Coob
