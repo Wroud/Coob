@@ -13,6 +13,8 @@ namespace Coob.Structures
     {
         #region Fields
         public ulong ID;
+        public ushort key;
+        public uint keyend;
         public byte[] LastBitmask;
 
         public QVector3 Position;

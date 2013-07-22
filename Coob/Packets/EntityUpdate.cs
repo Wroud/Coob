@@ -29,7 +29,9 @@ namespace Coob.Packets
                 int length = client.Reader.ReadInt32();
 
                 byte[] compressedData = client.Reader.ReadBytes(length);
-                byte[] maskedData = ZlibHelper.UncompressBuffer(compressedData);
+                ushort key;
+                uint keyend;
+                byte[] maskedData = ZlibHelper.UncompressBuffer(compressedData, out key, out keyend);
 
                 Entity entity;
 
@@ -47,18 +49,11 @@ namespace Coob.Packets
 
                         client.Entity = entity;
                         entity.ID = client.ID;
+                        entity.key = key;
+                        entity.keyend = keyend;
                         Root.Coob.Entities[client.ID] = client.Entity;
 
                         entity.ReadByMask(br);
-                        using (var mss = new MemoryStream())
-                        using (var bw = new BinaryWriter(mss))
-                        {
-                            client.Entity.AddPlayer(bw);
-                            bool enditly;
-                            for (int i = 0; i < mss.Length; i++)
-                                if (mss.ToArray()[i] != maskedData[i])
-                                    enditly = maskedData.SequenceEqual(mss.ToArray());
-                        }
 
                         return new EntityUpdate(client.Entity, client.Entity, true, client);
                     }
@@ -68,6 +63,9 @@ namespace Coob.Packets
 
                         Entity changes = new Entity();
                         changes.ReadByMask(br);
+
+                        client.Entity.key = key;
+                        client.Entity.keyend = keyend;
 
                         return new EntityUpdate(client.Entity, changes, false, client);
                     }
@@ -93,7 +91,7 @@ namespace Coob.Packets
                         using (var bw = new BinaryWriter(mss))
                         {
                             client.Entity.AddPlayer(bw);
-                            compressed = ZlibHelper.CompressBuffer(mss.ToArray());
+                            compressed = ZlibHelper.CompressBuffer(mss.ToArray(), client.Entity.key, client.Entity.keyend);
                         }
                         Sender.Writer.Write(0);
                         Sender.Writer.Write(compressed.Length);
@@ -119,7 +117,7 @@ namespace Coob.Packets
                     bw.Write(Changes.LastBitmask);
                     Entity.WriteByMask(Changes.LastBitmask, bw);
 
-                    compressed = ZlibHelper.CompressBuffer(ms.ToArray());
+                    compressed = ZlibHelper.CompressBuffer(ms.ToArray(), Entity.key, Entity.keyend);
                 }
 
                 foreach (var client in Root.Coob.GetClients())

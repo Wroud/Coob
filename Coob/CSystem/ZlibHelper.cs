@@ -10,15 +10,17 @@ namespace Coob
 {
     class ZlibHelper
     {
-        public static byte[] UncompressBuffer(byte[] buffer)
+        public static byte[] UncompressBuffer(byte[] buffer, out ushort key, out uint keyend)
         {
             byte[] toDecompress = new byte[buffer.Length - 2];
             Array.Copy(buffer, 2, toDecompress, 0, toDecompress.Length);
 
+            key = BitConverter.ToUInt16(buffer, 0);
+            keyend = BitConverter.ToUInt32(buffer, buffer.Length - 4);
             return DeflateStream.UncompressBuffer(toDecompress);
         }
 
-        public static byte[] CompressBuffer(byte[] buffer)
+        public static byte[] CompressBuffer(byte[] buffer, ushort key, uint keyend)
         {
             byte[] compressed;
             using (var compressStream = new MemoryStream())
@@ -28,8 +30,12 @@ namespace Coob
                 compressor.Close();
                 compressed = compressStream.ToArray();
             }
-            byte[] returnbytes = new byte[compressed.Length + 2];
+            byte[] returnbytes = new byte[compressed.Length + 6];
+            byte[] kbyte = BitConverter.GetBytes(key);
+            byte[] kebyte = BitConverter.GetBytes(keyend);
+            Array.Copy(kbyte, 0, returnbytes, 0, kbyte.Length);
             Array.Copy(compressed, 0, returnbytes, 2, compressed.Length);
+            Array.Copy(kebyte, 0, returnbytes, returnbytes.Length - 4, kebyte.Length);
             return returnbytes;
         }
     }

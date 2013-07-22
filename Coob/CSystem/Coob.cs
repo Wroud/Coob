@@ -9,6 +9,7 @@ using System.Threading;
 using Coob.Structures;
 using Coob.Packets;
 using Jint.Native;
+using System.IO;
 
 namespace Coob
 {
@@ -66,13 +67,9 @@ namespace Coob
             catch (SocketException e)
             {
                 if (e.ErrorCode == 10048)
-                {
                     Console.WriteLine("Something is already running on port " + options.Port + ". Can't start server.");
-                }
                 else
-                {
                     Console.WriteLine("Unknown error occured while trying to start server:\n" + e);
-                }
 
                 Environment.Exit(1);
             }
@@ -89,12 +86,11 @@ namespace Coob
             if (Root.Scripting.CallFunction<bool>("onClientConnect", ip))
             {
                 var newClient = new Client(tcpClient);
+                //AddPlayer(newClient.ID,newClient);
                 Clients.Add(newClient.ID, newClient);
             }
             else
-            {
                 tcpClient.Close();
-            }
 
             clientListener.BeginAcceptTcpClient(onClientConnect, null);
         }
@@ -104,7 +100,7 @@ namespace Coob
             if (!PacketParsers.ContainsKey(id))
             {
                 Log.Error("Unknown packet: {0} from client {1}", id, client.ID);
-                client.Disconnect("Unknown data");
+                //client.Disconnect("Unknown data");
                 return;
             }
 
@@ -165,12 +161,8 @@ namespace Coob
         public ulong CreateID()
         {
             for (ulong i = 1; i < Options.MaxClients; i++)
-            {
                 if (Clients.ContainsKey(i) == false)
-                {
                     return i;
-                }
-            }
 
             return 0;
         }
