@@ -70,6 +70,8 @@ namespace Coob.Structures
         public uint not_used6;
         public byte not_used7;
         public byte not_used8;
+        public uint not_used9;
+        public uint not_used10;
         public ulong ParentOwner;
         public uint not_used11;
         public uint not_used12;
@@ -125,9 +127,9 @@ namespace Coob.Structures
             {
                 Rotation = new Vector3
                 {
-                    Roll = reader.ReadSingle(),
-                    Pitch = reader.ReadSingle(),
-                    Yaw = reader.ReadSingle()
+                    X = reader.ReadSingle(),
+                    Y = reader.ReadSingle(),
+                    Z = reader.ReadSingle()
                 };
             }
             if (bitArray.Get(2))
@@ -345,6 +347,85 @@ namespace Coob.Structures
             }
         }
 
+        public void AddPlayer(BinaryWriter writer)
+        {
+            //69
+            writer.Write(ID);
+            writer.Write(0x0000FFFFFFFFFFFF);
+            Position.Write(writer);
+            Rotation.Write(writer);
+            Velocity.Write(writer);
+            Acceleration.Write(writer);
+            ExtraVelocity.Write(writer);
+            writer.Write(LookPitch);
+            writer.Write(PhysicsFlags);
+            writer.Write(SpeedFlags);
+            writer.Write(EntityType);
+            writer.Write(CurrentMode);
+            writer.Write(LastShootTime);
+            writer.Write(HitCounter);
+            writer.Write(LastHitTime);
+            Appearance.Write(writer);
+            writer.Write(Flags1);
+            writer.Write(Flags2);
+            writer.Write(RollTime);
+            writer.Write(StunTime);
+            writer.Write(SlowedTime);
+            writer.Write(MakeBlueTime);
+            writer.Write(SpeedUpTime);
+            writer.Write(ShowPatchTime);
+            writer.Write(ClassType);
+            writer.Write(Specialization);
+            writer.Write(ChargedMP);
+            writer.Write(not_used1);
+            writer.Write(not_used2);
+            writer.Write(not_used3);
+            writer.Write(not_used4);
+            writer.Write(not_used5);
+            writer.Write(not_used6);
+            RayHit.Write(writer);
+            writer.Write(HP);
+            writer.Write(MP);
+            writer.Write(BlockPower);
+            writer.Write(MaxHPMultiplier);
+            writer.Write(ShootSpeed);
+            writer.Write(DamageMultiplier);
+            writer.Write(ArmorMultiplier);
+            writer.Write(ResistanceMultiplier);
+            writer.Write(not_used7);
+            writer.Write(not_used8);
+            writer.Write(Level);
+            writer.Write(CurrentXP);
+            //writer.Write(not_used9);
+            //writer.Write(not_used10);
+            writer.Write(ParentOwner);
+            writer.Write(unknown_or_not_used1);
+            writer.Write(unknown_or_not_used2);
+            writer.Write(unknown_or_not_used3);
+            writer.Write(unknown_or_not_used4);
+            writer.Write(unknown_or_not_used5);
+            writer.Write(not_used11);
+            writer.Write(not_used12);
+            writer.Write(not_used13);
+            writer.Write(not_used14);
+            writer.Write(not_used15);
+            writer.Write(not_used16);
+            writer.Write(not_used17);
+            writer.Write(not_used18);
+            writer.Write(not_used20);
+            writer.Write(not_used21);
+            writer.Write(not_used22);
+            writer.Write(not_used19);
+            ItemData.Write(writer);
+            for (int i = 0; i < 13; i++)
+                Equipment[i].Write(writer);
+            writer.Write(Encoding.ASCII.GetBytes(Name.ToCharArray()));
+            writer.Write(new byte[16 - Encoding.ASCII.GetByteCount(Name.ToCharArray())]);
+            for (int i = 0; i < 11; i++)
+                writer.Write(Skills[i]);
+            writer.Write(IceBlockFour);
+        }
+
         public void CopyByMask(Entity from)
         {
             LastBitmask = from.LastBitmask;
@@ -359,9 +440,9 @@ namespace Coob.Structures
             {
                 Rotation = new Vector3
                 {
-                    Pitch = from.Rotation.Pitch,
-                    Roll = from.Rotation.Roll,
-                    Yaw = from.Rotation.Yaw
+                    X = from.Rotation.X,
+                    Y = from.Rotation.Y,
+                    Z = from.Rotation.Z
                 };
             }
             if (bitArray.Get(2))
@@ -734,6 +815,8 @@ namespace Coob.Structures
             }
             if (bitArray.Get(35))
             {
+                //writer.Write(not_used9);
+                //writer.Write(not_used10);
                 writer.Write(ParentOwner);
             }
             if (bitArray.Get(36))
@@ -788,7 +871,7 @@ namespace Coob.Structures
             if (bitArray.Get(45))
             {
                 writer.Write(Name);
-                writer.Write(new byte[16-Name.Length]);
+                writer.Write(new byte[16 - Name.Length]);
             }
             if (bitArray.Get(46))
             {

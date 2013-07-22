@@ -50,6 +50,15 @@ namespace Coob.Packets
                         Root.Coob.Entities[client.ID] = client.Entity;
 
                         entity.ReadByMask(br);
+                        using (var mss = new MemoryStream())
+                        using (var bw = new BinaryWriter(mss))
+                        {
+                            client.Entity.AddPlayer(bw);
+                            bool enditly;
+                            for (int i = 0; i < mss.Length; i++)
+                                if (mss.ToArray()[i] != maskedData[i])
+                                    enditly = maskedData.SequenceEqual(mss.ToArray());
+                        }
 
                         return new EntityUpdate(client.Entity, client.Entity, true, client);
                     }
@@ -74,6 +83,23 @@ namespace Coob.Packets
                     if (joined)
                         Sender.Joined = true;
 
+                    foreach (var client in Root.Coob.GetClients())
+                    {
+                        if (client.ID == Entity.ID)
+                            continue;
+                        byte[] compressed;
+
+                        using (var mss = new MemoryStream())
+                        using (var bw = new BinaryWriter(mss))
+                        {
+                            client.Entity.AddPlayer(bw);
+                            compressed = ZlibHelper.CompressBuffer(mss.ToArray());
+                        }
+                        Sender.Writer.Write(0);
+                        Sender.Writer.Write(compressed.Length);
+                        Sender.Writer.Write(compressed);
+                    }
+
                     return joined;
                 }
                 else
@@ -82,26 +108,32 @@ namespace Coob.Packets
 
             public override void Process()
             {
-                //Entity.CopyByMask(Changes);
-                //
-                //byte[] compressed;
-                //
-                //using (var ms = new MemoryStream())
-                //using (var bw = new BinaryWriter(ms))
-                //{
-                //    bw.Write(Entity.ID);
-                //    bw.Write(Changes.LastBitmask);
-                //    Entity.WriteByMask(Changes.LastBitmask, bw);
-                //
-                //    compressed = ZlibHelper.CompressBuffer(ms.ToArray());
-                //}
-                //
-                //foreach (var client in Root.Coob.GetClients())
-                //{
-                //    client.Writer.Write(0);
-                //    client.Writer.Write(compressed.Length);
-                //    client.Writer.Write(compressed);
-                //}
+                Entity.CopyByMask(Changes);
+
+                byte[] compressed;
+
+                using (var ms = new MemoryStream())
+                using (var bw = new BinaryWriter(ms))
+                {
+                    bw.Write(Entity.ID);
+                    bw.Write(Changes.LastBitmask);
+                    Entity.WriteByMask(Changes.LastBitmask, bw);
+
+                    compressed = ZlibHelper.CompressBuffer(ms.ToArray());
+                }
+
+                foreach (var client in Root.Coob.GetClients())
+                {
+                    //if (client.ID == Entity.ID)
+                    continue;
+                    try
+                    {
+                        client.Writer.Write(0);
+                        client.Writer.Write(compressed.Length);
+                        client.Writer.Write(compressed);
+                    }
+                    catch { }
+                }
             }
         }
     }

@@ -14,7 +14,7 @@ namespace Coob.Structures
         public uint Modifier;
         public uint MinusModifier;
         public byte Rarity, Material, Flags;
-        public ushort Level;
+        public short Level;
         public ItemUpgrade[] Upgrades;
         public uint UpgradeCount;
 
@@ -34,7 +34,7 @@ namespace Coob.Structures
             Material = reader.ReadByte();
             Flags = reader.ReadByte();
             reader.ReadByte(); // skip 1
-            Level = reader.ReadUInt16();
+            Level = reader.ReadInt16();
             reader.ReadInt16(); // skip 2
             for (int i = 0; i < 32; i++)
             {
@@ -83,7 +83,7 @@ namespace Coob.Structures
 
             writer.Write((short)0); // skip 2
 
-            for (int i = 0; i < 32; i++)
+            for (int i = 0; i < Upgrades.Length; i++)
             {
                 Upgrades[i].Write(writer);
             }

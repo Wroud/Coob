@@ -21,15 +21,16 @@ namespace Coob
         public static byte[] CompressBuffer(byte[] buffer)
         {
             byte[] compressed;
-            using (var input = new MemoryStream(buffer))
             using (var compressStream = new MemoryStream())
             using (var compressor = new DeflateStream(compressStream, CompressionMode.Compress))
             {
-                input.CopyTo(compressor);
+                compressor.Write(buffer, 0, buffer.Length);
                 compressor.Close();
                 compressed = compressStream.ToArray();
             }
-            return compressed;
+            byte[] returnbytes = new byte[compressed.Length + 2];
+            Array.Copy(compressed, 0, returnbytes, 2, compressed.Length);
+            return returnbytes;
         }
     }
 }
