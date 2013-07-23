@@ -6,10 +6,13 @@ using System.Text;
 using System.Net.Sockets;
 using System.Net;
 using System.Threading;
+using Coob.CoobEventArgs;
 using Coob.Structures;
 using Coob.Packets;
 using Jint.Native;
 using System.IO;
+using Coob.Game;
+using System.Diagnostics;
 
 namespace Coob
 {
@@ -34,12 +37,13 @@ namespace Coob
         public delegate Packet.Base PacketParserDel(Client client);
         public Dictionary<int, PacketParserDel> PacketParsers;
         public Dictionary<ulong, Client> Clients;
-        public ConcurrentDictionary<ulong, Entity> Entities;
+        public World World { get; private set; }
         public CoobOptions Options;
 
         TcpListener clientListener;
 
         Thread messageHandlerThread;
+        Thread worldThread;
 
         public bool Running { get; private set; }
 
@@ -49,7 +53,7 @@ namespace Coob
             MessageQueue = new ConcurrentQueue<Packet.Base>();
             PacketParsers = new Dictionary<int, PacketParserDel>();
             Clients = new Dictionary<ulong, Client>();
-            Entities = new ConcurrentDictionary<ulong, Entity>();
+            World = new World(options.WorldSeed);
 
             PacketParsers.Add((int)CSPacketIDs.EntityUpdate, Packet.EntityUpdate.Parse);
             PacketParsers.Add((int)CSPacketIDs.Interact, Packet.Interact.Parse);
@@ -63,18 +67,18 @@ namespace Coob
             {
                 clientListener = new TcpListener(IPAddress.Any, options.Port);
                 clientListener.Start();
+				clientListener.BeginAcceptTcpClient(onClientConnect, null);
             }
             catch (SocketException e)
             {
                 if (e.ErrorCode == 10048)
-                    Console.WriteLine("Something is already running on port " + options.Port + ". Can't start server.");
+                    Log.Error("Something is already running on port " + options.Port + ". Can't start server.");
                 else
-                    Console.WriteLine("Unknown error occured while trying to start server:\n" + e);
+                    Log.Error("Unknown error occured while trying to start server:\n" + e);
 
+				Log.Display();
                 Environment.Exit(1);
             }
-
-            clientListener.BeginAcceptTcpClient(onClientConnect, null);
         }
 
         void onClientConnect(IAsyncResult result)
@@ -83,7 +87,8 @@ namespace Coob
 
             string ip = (tcpClient.Client.RemoteEndPoint as IPEndPoint).Address.ToString();
 
-            if (Root.Scripting.CallFunction<bool>("onClientConnect", ip))
+            var clientConnectArgs = new ClientConnectEventArgs(ip);
+            if (!Root.ScriptManager.CallEvent("OnClientConnect", clientConnectArgs).Canceled)
             {
                 var newClient = new Client(tcpClient);
                 //AddPlayer(newClient.ID,newClient);
@@ -115,42 +120,85 @@ namespace Coob
             }
         }
 
-        public void StartMessageHandler()
+        public void StartServer()
         {
             Running = true;
+			
+            worldThread = new Thread(updateWorld);
+            worldThread.Start();
+			
             messageHandlerThread = new Thread(messageHandler);
             messageHandlerThread.Start();
 
-            Log.Info("Started message handler.");
+            Log.Info("Started message handler and world.");
         }
 
-        public void StopMessageHandler()
+        public void StopServer()
         {
             Running = false;
         }
+ 
+        void updateWorld()
+        {
+            var elapsedDt = new Stopwatch();
+            float dtSinceLastEntityUpdate = 0;
+
+            while (Running)
+            {
+                var totalDt = (float)elapsedDt.Elapsed.TotalSeconds;
+                var accumulator = totalDt;
+                elapsedDt.Restart();
+
+                //int times = 0;
+                //Console.WriteLine("------------------------------------");
+                while (accumulator > Globals.WorldTickPerSecond / 1000f)
+                {
+                    //++times;
+                    float dt = Math.Min(accumulator, Globals.WorldTickPerSecond / 1000f);
+                    accumulator -= dt;
+                    //Console.WriteLine(dt);
+
+                    dtSinceLastEntityUpdate += dt * 1000f; // * 1000 because counting in milliseconds below.
+
+                    World.Update(dt);
+
+                    if (dtSinceLastEntityUpdate >= Globals.EntityUpdatesPerSecond)
+                    {
+                        World.SendEntityUpdates();
+                        dtSinceLastEntityUpdate = 0;
+                    }
+
+                    Log.Display();
+                }
+                //Console.WriteLine("------------------------------------");
+                //Console.WriteLine("Updated " + times + " times");
+
+                Thread.Sleep(Globals.WorldTickPerSecond);
+            }
+        }
+
 
         void messageHandler()
         {
             while (Running)
             {
                 Packet.Base message = null;
-                if (!MessageQueue.TryDequeue(out message)) goto displayLog;
+                if (!MessageQueue.TryDequeue(out message)) continue;
 
                 try
                 {
-                    if (!message.CallScript()) goto displayLog;
+                    if (!message.CallScript()) continue;
                 }
                 catch (JsException ex)
                 {
                     var messageText = (ex.InnerException != null ? (ex.Message + ": " + ex.InnerException.Message) : ex.Message);
                     Log.Error("JS Error on {0}: {1} - {2}", message.PacketTypeName, messageText, ex.Value);
-                    goto displayLog;
+                    continue;
                 }
 
                 message.Process();
 
-            displayLog:
-                Log.Display();
+            Thread.Sleep(1); // Avoid maxing the cpu (as much).
             }
         }
 
@@ -183,7 +231,12 @@ namespace Coob
 
         public Client[] GetClients()
         {
-            return Clients.Values.ToArray();
+            return GetClients(null);
+        }
+
+        public Client[] GetClients(Client except)
+        {
+            return Clients.Values.Where(cl => cl != except).ToArray();
         }
 
         public void SendServerMessage(string message)

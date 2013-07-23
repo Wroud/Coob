@@ -1,4 +1,5 @@
-﻿using Coob.Exceptions;
+﻿using Coob.CoobEventArgs;
+using Coob.Exceptions;
 using Coob.Packets;
 using Coob.Structures;
 using System;
@@ -69,7 +70,7 @@ namespace Coob
         public void Disconnect(string reason = "")
         {
             Joined = false;
-            Root.Scripting.CallFunction("onClientDisconnect", this);
+            Root.ScriptManager.CallEvent("OnClientDisconnect", new DisconnectEventArgs(this));
 
             Log.Info("Client {0} disconnected ({1}).", ID, reason);
             tcp.Close();

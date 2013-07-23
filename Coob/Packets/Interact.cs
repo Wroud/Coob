@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Coob.CoobEventArgs;
 using Coob.Structures;
 
 namespace Coob.Packets
@@ -53,21 +54,22 @@ namespace Coob.Packets
 
             public override bool CallScript()
             {
-                return Root.Scripting.CallFunction<bool>("onInteract", this, Sender);
+                var interactArgs = new InteractEventArgs(Sender, this);
+                return Root.ScriptManager.CallEvent("OnInteract", interactArgs).Canceled == false;
             }
 
             public override void Process()
             {
-                BinaryWriter writer = Sender.Writer;
-
-                Item.Write(writer);
-                writer.Write(ChunkX);
-                writer.Write(ChunkY);
-                writer.Write(ItemIndex);
-                writer.Write(Something4);
-                writer.Write((byte)InteractType);
-                writer.Write(Something6);
-                writer.Write(Something7);
+                //BinaryWriter writer = Sender.Writer;
+                //
+                //Item.Write(writer);
+                //writer.Write(ChunkX);
+                //writer.Write(ChunkY);
+                //writer.Write(ItemIndex);
+                //writer.Write(Something4);
+                //writer.Write((byte)InteractType);
+                //writer.Write(Something6);
+                //writer.Write(Something7);
             }
         }
     }

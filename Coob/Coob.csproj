@@ -68,11 +68,27 @@
   <ItemGroup>
     <Compile Include="CSystem\BinaryWriterExtensions.cs" />
     <Compile Include="CSystem\Client.cs" />
+    <Compile Include="CoobEventArgs\ChatEventArgs.cs" />
+    <Compile Include="CoobEventArgs\ClientConnectEventArgs.cs" />
     <Compile Include="CSystem\Coob.cs" />
+    <Content Include="CoobPlugin.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Compile Include="CoobEventArgs\ClientJoinEventArgs.cs" />
+    <Compile Include="CoobEventArgs\ClientVersionEventArgs.cs" />
+    <Compile Include="CoobEventArgs\DisconnectEventArgs.cs" />
+    <Compile Include="CoobEventArgs\EntityUpdateEventArgs.cs" />
+    <Compile Include="CoobEventArgs\InteractEventArgs.cs" />
+    <Compile Include="CoobEventArgs\WorldUpdateEventArgs.cs" />
     <Compile Include="Exceptions\UserLimitReachedException.cs" />
+    <Compile Include="Game\World.cs" />
+    <Compile Include="Globals.cs" />
     <Compile Include="CSystem\FileEngine\iniFile.cs" />
-    <Compile Include="CSystem\Hooks.cs" />
-    <Compile Include="CSystem\IScriptHandler.cs" />
+    <Compile Include="ScriptEngines\ScriptManager.cs" />
+    <Compile Include="CoobEventArgs\QuitEventArgs.cs" />
+    <Compile Include="CoobEventArgs\InitializeEventArgs.cs" />
+    <Compile Include="ScriptEngines\CSharpEngine.cs" />
+    <Compile Include="ScriptEngines\IScriptHandler.cs" />
     <Compile Include="CSystem\Log.cs" />
     <Compile Include="CSystem\NetReader.cs" />
     <Compile Include="Packets\Packet.cs" />
@@ -84,8 +100,9 @@
     <Compile Include="Packets\Shoot.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="CSystem\JavascriptEngine.cs" />
+    <Compile Include="ScriptEngines\JavascriptEngine.cs" />
     <Compile Include="CSystem\QVector3.cs" />
+    <Compile Include="CoobEventArgs\ScriptEventArgs.cs" />
     <Compile Include="Structures\Appearance.cs" />
     <Compile Include="Structures\Entity.cs" />
     <Compile Include="Structures\Item.cs" />
@@ -96,9 +113,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Coob.java">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="Ionic.Zlib.dll" />
     <Content Include="Jint.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

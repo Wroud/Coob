@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Coob.Structures;
 using System.IO;
+using Coob.CoobEventArgs;
 
 namespace Coob.Packets
 {
@@ -51,7 +52,7 @@ namespace Coob.Packets
                         entity.ID = client.ID;
                         entity.key = key;
                         entity.keyend = keyend;
-                        Root.Coob.Entities[client.ID] = client.Entity;
+                        Root.Coob.World.Entities[client.ID] = client.Entity;
 
                         entity.ReadByMask(br);
 
@@ -59,7 +60,7 @@ namespace Coob.Packets
                     }
                     else
                     {
-                        entity = Root.Coob.Entities[id];
+                        entity = Root.Coob.World.Entities[id];
 
                         Entity changes = new Entity();
                         changes.ReadByMask(br);
@@ -76,7 +77,7 @@ namespace Coob.Packets
             {
                 if (IsJoin)
                 {
-                    bool joined = Root.Scripting.CallFunction<bool>("onClientJoin", Sender);
+                    bool joined = Root.ScriptManager.CallEvent("OnClientJoin", new ClientJoinEventArgs(Sender)).Canceled == false;
 
                     if (joined)
                         Sender.Joined = true;
@@ -101,7 +102,7 @@ namespace Coob.Packets
                     return joined;
                 }
                 else
-                    return Root.Scripting.CallFunction<bool>("onEntityUpdate", Entity, Changes, Sender);
+                    return Root.ScriptManager.CallEvent("OnEntityUpdate", new EntityUpdateEventArgs(Sender, Changes)).Canceled == false;
             }
 
             public override void Process()
@@ -120,13 +121,13 @@ namespace Coob.Packets
                     compressed = ZlibHelper.CompressBuffer(ms.ToArray(), Entity.key, Entity.keyend);
                 }
 
-                foreach (var client in Root.Coob.GetClients())
+                foreach (var client in Root.Coob.GetClients(Sender))
                 {
                     //if (client.ID == Entity.ID)
                     continue;
                     try
                     {
-                        client.Writer.Write(0);
+                        client.Writer.Write((int)SCPacketIDs.EntityUpdate);
                         client.Writer.Write(compressed.Length);
                         client.Writer.Write(compressed);
                     }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Coob.CoobEventArgs;
 
 namespace Coob.Packets
 {
@@ -25,7 +26,7 @@ namespace Coob.Packets
 
             public override bool CallScript()
             {
-                return Root.Scripting.CallFunction<bool>("onClientVersion", Version, Sender);
+                return Root.ScriptManager.CallEvent("OnClientVersion", new ClientVersionEventArgs(Sender, Version)).Canceled == false;
             }
 
             public override void Process()
@@ -33,10 +34,10 @@ namespace Coob.Packets
                 Sender.Writer.Write((int)SCPacketIDs.Join); // ServerData
                 Sender.Writer.Write(0);
                 Sender.Writer.Write(Sender.ID);
-                Sender.Writer.Write(new byte[0x1168]);
-
-                Sender.Writer.Write((int)SCPacketIDs.SeedData);
-                Sender.Writer.Write(Root.Coob.Options.WorldSeed);
+                 Sender.Writer.Write(new byte[0x1168]);
+ 
+                 Sender.Writer.Write((int)SCPacketIDs.SeedData);
+                Sender.Writer.Write(Root.Coob.World.Seed);
             }
         }
     }
